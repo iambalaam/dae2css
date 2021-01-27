@@ -1,5 +1,9 @@
-import { greeting } from './index';
+import { DAEFile2JSON, COLLADA } from './index';
 
-it('Says hello', () => {
-    expect(greeting.toLowerCase()).toContain('hello');
-})
+let json;
+
+it('can parse xml attributes', async () => {
+    const dae = await DAEFile2JSON('mocks/icosphere.dae');
+    json = dae;
+    expect(Object.keys(dae)).toEqual([COLLADA]);
+});
