@@ -1,6 +1,7 @@
 import { resolve } from 'path';
 import { readFileSync } from 'fs';
 import { Parser } from 'xml2js';
+import { Vector3d, Triangle3D } from './types';
 
 // File format docs: https://www.khronos.org/files/collada_spec_1_5.pdf
 export const COLLADA = 'COLLADA';
@@ -46,10 +47,7 @@ export type ColladaJSON = {
     }
 };
 
-export type Vector3d = { x: number, y: number, z: number };
-export type Triangle3D = [Vector3d, Vector3d, Vector3d];
 export type TrianglesIndices = [number, number, number][];
-export type Triangles3D = Triangle3D[];
 
 export async function DAEFile2JSON(relativePath: string) {
     // Read file
@@ -177,7 +175,7 @@ export function getIndexVertices(mesh: Mesh) {
 
 };
 
-export function mapTriangleIndecesToVertices(trianglesIndices: TrianglesIndices, vertices: Vector3d[]): Triangles3D {
+export function mapTriangleIndecesToVertices(trianglesIndices: TrianglesIndices, vertices: Vector3d[]): Triangle3D[] {
     return trianglesIndices
         .map(([v1, v2, v3]) => {
             if (Math.max(v1,v2,v3) > vertices.length) {

@@ -2,10 +2,9 @@ import {
     DAEFile2JSON, JSON2Mesh, getTriangleIndecies, getIndexVertices, mapTriangleIndecesToVertices,
     COLLADA,
     TrianglesIndices,
-    Vector3d,
     parseDAETriangles
 } from './DAEParser';
-
+import { Vector3d } from './types';
 
 it('can parse xml attributes', async () => {
     const daeJSON = await DAEFile2JSON('mocks/cube.dae');
