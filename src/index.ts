@@ -44,7 +44,7 @@ export type ColladaJSON = {
 
 export type Vector3d = { x: number, y: number, z: number };
 export type Triangle3D = [Vector3d, Vector3d, Vector3d];
-export type TrianglesIndices = number[];
+export type TrianglesIndices = [number, number, number][];
 export type Triangles3D = Triangle3D[];
 
 export async function DAEFile2JSON(relativePath: string) {
@@ -105,5 +105,7 @@ export function getTriangleIndecies(mesh: Mesh) {
     const offset = parseInt(vertexInput.$.offset);
     const vertexTriangleData = allTriangleData.filter((_, i) => i % totalOffsets === offset);
 
-    return vertexTriangleData as TrianglesIndices;
+    return new Array(triangleCount)
+        .fill(undefined)
+        .map((_, i) => [vertexTriangleData[3 * i], vertexTriangleData[3 * i + 1], vertexTriangleData[3 * i + 2]]) as TrianglesIndices;
 };
