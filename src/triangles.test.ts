@@ -1,4 +1,4 @@
-import { adjugate3x3, determinant3x3, getBoxModel, perpendicularDisector, transpose3x3 } from './triangles';
+import { adjugate3x3, determinant3x3, getBoxModel, identity3x3, inverse3x3, Matrix3x3, multiply3x3, perpendicularDisector, transpose3x3 } from './triangles';
 import { Triangle3D } from './types';
 
 describe('helpers', () => {
@@ -18,7 +18,13 @@ describe('helpers', () => {
         expect(
             adjugate3x3([{ x: 1, y: 0, z: 5 }, { x: 2, y: 1, z: 6 }, { x: 3, y: 4, z: 0 }])
         ).toEqual([{ x: -24, y: 20, z: -5 }, { x: 18, y: -15, z: 4 }, { x: 5, y: -4, z: 1 }]);
-    })
+    });
+
+    it('can find an inverse matrix', () => {
+        const M: Matrix3x3 = [{ x: 1, y: 0, z: 5 }, { x: 2, y: 1, z: 6 }, { x: 3, y: 4, z: 0 }];
+        const invM = inverse3x3(M);
+        expect(multiply3x3(M, invM)).toEqual(identity3x3);
+    });
 })
 
 describe('perpendicularDisector()', () => {

@@ -22,10 +22,31 @@ export function distance3D(v1: Vector3d, v2: Vector3d) {
 
 // Matrix Helpers (using column vectors)
 export type Matrix3x3 = [Vector3d, Vector3d, Vector3d];
+export const identity3x3 = [{ x: 1, y: 0, z: 0 }, { x: 0, y: 1, z: 0 }, { x: 0, y: 0, z: 1 }];
 export function scale3x3(s: number, M: Matrix3x3): Matrix3x3 {
     const [v1, v2, v3] = M;
     return [scale3D(s, v1), scale3D(s, v2), scale3D(s, v3)];
-}
+};
+
+export function multiply3x3(A: Matrix3x3, B: Matrix3x3): Matrix3x3 {
+    const [a1, a2, a3] = A;
+    const [b1, b2, b3] = B;
+    return [
+        {
+            x: (a1.x * b1.x) + (a2.x * b1.y) + (a3.x * b1.z),
+            y: (a1.y * b1.x) + (a2.y * b1.y) + (a3.y * b1.z),
+            z: (a1.z * b1.x) + (a2.z * b1.y) + (a3.z * b1.z),
+        }, {
+            x: (a1.x * b2.x) + (a2.x * b2.y) + (a3.x * b2.z),
+            y: (a1.y * b2.x) + (a2.y * b2.y) + (a3.y * b2.z),
+            z: (a1.z * b2.x) + (a2.z * b2.y) + (a3.z * b2.z),
+        }, {
+            x: (a1.x * b3.x) + (a2.x * b3.y) + (a3.x * b3.z),
+            y: (a1.y * b3.x) + (a2.y * b3.y) + (a3.y * b3.z),
+            z: (a1.z * b3.x) + (a2.z * b3.y) + (a3.z * b3.z),
+        }
+    ]
+};
 
 export function determinant3x3(M: Matrix3x3): number {
     const [v1, v2, v3] = M;
@@ -69,7 +90,7 @@ export function inverse3x3(M: Matrix3x3): Matrix3x3 {
     if (det === 0) return undefined;
 
     return scale3x3(1 / det, adjugate3x3(M));
-}
+};
 
 /**
  * Returns index i where the line i to i+1 is the hypotenuse
