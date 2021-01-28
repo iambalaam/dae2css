@@ -3,22 +3,34 @@ import { Triangle3D, Vector3d } from './types';
 // Vector helpers
 export function scale3D(s: number, v: Vector3d) {
     return { x: s * v.x, y: s * v.y, z: s * v.z };
-}
+};
 export function add3D(v1: Vector3d, v2: Vector3d): Vector3d {
     return { x: v1.x + v2.x, y: v1.y + v2.y, z: v1.z + v2.z };
-}
+};
 export function subtract3D(v1: Vector3d, v2: Vector3d): Vector3d {
     return { x: v1.x - v2.x, y: v1.y - v2.y, z: v1.z - v2.z };
-}
+};
 export function dot3D(v1: Vector3d, v2: Vector3d): number {
     return (v1.x * v2.x) + (v1.y * v2.y) + (v1.z * v2.z)
-}
-export function magnitude3D(v: Vector3d) {
+};
+export function magnitude3D(v: Vector3d): number {
     return Math.hypot(v.x, v.y, v.z);
-}
-export function distance3D(v1: Vector3d, v2: Vector3d) {
+};
+export function distance3D(v1: Vector3d, v2: Vector3d): number {
     return magnitude3D(subtract3D(v2, v1));
-}
+};
+export function cross3D(v1: Vector3d, v2: Vector3d): Vector3d {
+    return {
+        x: v1.y * v2.z - v1.z * v2.y,
+        y: v1.z * v2.x - v1.x * v2.z,
+        z: v1.x * v2.y - v1.y * v2.x
+    }
+};
+export function normal3D(v1: Vector3d, v2: Vector3d): Vector3d {
+    const crossed = cross3D(v1, v2);
+    const mag = magnitude3D(crossed);
+    return scale3D(1 / mag, crossed);
+};
 
 // Matrix Helpers (using column vectors)
 export type Matrix3x3 = [Vector3d, Vector3d, Vector3d];
@@ -148,5 +160,36 @@ export function getBoxModel(triangle: Triangle3D) {
         borderLeft: distance3D(triangle[hypotenuse], p),
         borderRight: distance3D(triangle[(hypotenuse + 1) % 3], p),
     }
+}
 
+export function getTransformationMatrix(triangle: Triangle3D) {
+    // Calculate initial triangle vertices
+    const { width, height, borderLeft } = getBoxModel(triangle);
+    const initialTriangle: Triangle3D = [
+        { x: 0, y: 0, z: 0 },
+        { x: width, y: 0, z: 0 },
+        { x: borderLeft, y: height, z: 0 }
+    ];
+    const initialNormal: Vector3d = { x: 0, y: 0, z: 1 };
+
+    // Translate the first vertex to the origin
+    const targetTriangle = [
+        { x: 0, y: 0, z: 0 },
+        subtract3D(triangle[1], triangle[0]),
+        subtract3D(triangle[2], triangle[0])
+    ]
+    const targetNormal = normal3D(targetTriangle[1], targetTriangle[2])
+
+    // Some transform matrix M maps initial triangle (iT) to target triangle (tT)
+    // M(iT) = (tT)
+    const iT: Matrix3x3 = [initialNormal, initialTriangle[1], initialTriangle[2]];
+    const tT: Matrix3x3 = [targetNormal, targetTriangle[1], targetTriangle[2]]
+
+    // If we can find an inverse (iTinv) so (iTinv)(iT) = I
+    // Then
+    // M = (tT)(iTinv)
+    const iTinv = inverse3x3(iT);
+
+    const M = multiply3x3(tT, iTinv);
+    return M;
 }

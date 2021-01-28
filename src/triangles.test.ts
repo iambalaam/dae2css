@@ -1,4 +1,4 @@
-import { adjugate3x3, determinant3x3, getBoxModel, identity3x3, inverse3x3, Matrix3x3, multiply3x3, perpendicularDisector, transpose3x3 } from './triangles';
+import { adjugate3x3, determinant3x3, getBoxModel, getTransformationMatrix, identity3x3, inverse3x3, Matrix3x3, multiply3x3, perpendicularDisector, transpose3x3 } from './triangles';
 import { Triangle3D } from './types';
 
 describe('helpers', () => {
@@ -53,4 +53,13 @@ describe('getBoxModel()', () => {
         expect(borderLeft).toBe(2);
         expect(borderRight).toBe(6);
     })
+});
+
+it('works?', () => {
+    const mockTriangle: Triangle3D = [
+        { x: 0, y: 0, z: 0 },
+        { x: 1, y: 0, z: 0 },
+        { x: 0, y: 1, z: 0 },
+    ];
+    expect(getTransformationMatrix(mockTriangle)).not.toBeFalsy();
 });
