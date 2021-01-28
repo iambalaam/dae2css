@@ -1,4 +1,3 @@
-import * as assert from 'assert';
 import { resolve } from 'path';
 import { readFileSync } from 'fs';
 import { Parser } from 'xml2js';
@@ -11,7 +10,12 @@ export const MESH = 'mesh';
 export const SOURCE = 'source';
 
 export type Mesh = {
-    source: { $: { id: string } }[],
+    source: {
+        $: { id: string }, float_array: {
+            $: { id: string, count: string },
+            _: string
+        }[]
+    }[],
     vertices: [{
         $: { id: string },
         input: { $: { source: string } }[]
@@ -82,26 +86,33 @@ export function JSON2Mesh(daeJson: ColladaJSON) {
     return mesh;
 };
 
-export function getTriangleIndecies(mesh: Mesh) {
-    // Get correct mapping
+export function assertLinkedVertexIds(mesh: Mesh) {
     const verticesId = '#' + mesh.vertices[0].$.id;
+    const triangles = mesh.triangles[0];
+    const vertexInput = triangles.input.find((input) => input.$.semantic === 'VERTEX');
+    const vertexSourceId = vertexInput.$.source;
+    if (vertexSourceId !== verticesId) {
+        throw new Error('Cannot find vertex data');
+    }
+}
 
+export function getTriangleIndecies(mesh: Mesh) {
     // Find Vertex Source
     const triangles = mesh.triangles[0];
     const triangleCount = parseInt(triangles.$.count);
     const vertexInput = triangles.input.find((input) => input.$.semantic === 'VERTEX');
-    const vertexSourceId = vertexInput.$.source;
-
-    if (vertexSourceId !== verticesId) {
-        throw new Error('Cannot find vertex data');
-    }
 
     // Filter vertex data
     const allTriangleData = triangles.p[0]
         .split(/\s/)
         .map((s) => parseInt(s));
     const totalOffsets = allTriangleData.length / triangleCount / 3;
-    assert.strictEqual(Math.floor(totalOffsets), totalOffsets, 'Malformed vertex data'); // Must be integer
+
+    // Must be integer
+    if (Math.floor(totalOffsets) !== totalOffsets) {
+        throw new Error('Malformed triangle data');
+    }
+
     const offset = parseInt(vertexInput.$.offset);
     const vertexTriangleData = allTriangleData.filter((_, i) => i % totalOffsets === offset);
 
@@ -109,3 +120,37 @@ export function getTriangleIndecies(mesh: Mesh) {
         .fill(undefined)
         .map((_, i) => [vertexTriangleData[3 * i], vertexTriangleData[3 * i + 1], vertexTriangleData[3 * i + 2]]) as TrianglesIndices;
 };
+
+export function getIndexVertices(mesh: Mesh) {
+    // TODO search instead of hardcode
+    const vertexSource = mesh.source.find((source) => source.$.id === 'Cube-mesh-positions');
+    const vertexCount = parseInt(vertexSource.float_array[0].$.count) / 3;
+
+    // Must be integer
+    if (Math.floor(vertexCount) !== vertexCount) {
+        throw new Error('Malformed vertex data');
+    }
+
+    const vertices: Vector3d[] = [];
+    vertexSource.float_array[0]._
+        .split(/\s+/)
+        .forEach((coordinate, index) => {
+            const axis = index % 3;
+            const vertex = (index - axis) / 3;
+
+            switch (axis) {
+                case 0:
+                    vertices[vertex] = { x: parseFloat(coordinate), y: undefined, z: undefined };
+                    break;
+                case 1:
+                    vertices[vertex].y = parseFloat(coordinate);
+                    break;
+                case 2:
+                    vertices[vertex].z = parseFloat(coordinate);
+                    break;
+            } 
+        });
+        
+        return vertices;
+
+}
