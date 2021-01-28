@@ -86,17 +86,38 @@ export function JSON2Mesh(daeJson: ColladaJSON) {
     return mesh;
 };
 
-export function assertLinkedVertexIds(mesh: Mesh) {
-    const verticesId = '#' + mesh.vertices[0].$.id;
-    const triangles = mesh.triangles[0];
-    const vertexInput = triangles.input.find((input) => input.$.semantic === 'VERTEX');
-    const vertexSourceId = vertexInput.$.source;
-    if (vertexSourceId !== verticesId) {
+export function getSourceId(mesh: Mesh) {
+    const inputSources = mesh.vertices[0].input;
+    if (!inputSources || !inputSources.length) {
+        throw new Error('Cannot find input source data');
+    }
+    if (inputSources.length> 1) {
+        throw new Error('Multiple input source data found');
+    }
+    return inputSources[0].$.source;
+};
+
+export function getVerticesId(mesh: Mesh) {
+    const vertices =  mesh.vertices;
+    if (!vertices || !vertices.length) {
         throw new Error('Cannot find vertex data');
     }
-}
+    if (vertices.length > 1) {
+        throw new Error('Multiple vertex data found');
+    }
+    return '#' + vertices[0].$.id;
+};
 
-export function getTriangleIndecies(mesh: Mesh) {
+export function assertLinkedVertexIds(mesh: Mesh) {
+    const verticesId = getVerticesId(mesh);
+    const triangles = mesh.triangles[0];
+    const vertexInput = triangles.input.find((input) => input.$.semantic === 'VERTEX');
+    if (vertexInput.$.source !== verticesId) {
+        throw new Error('Cannot find vertex data');
+    }
+};
+
+export function getTriangleIndecies(mesh: Mesh): TrianglesIndices {
     // Find Vertex Source
     const triangles = mesh.triangles[0];
     const triangleCount = parseInt(triangles.$.count);
@@ -123,7 +144,8 @@ export function getTriangleIndecies(mesh: Mesh) {
 
 export function getIndexVertices(mesh: Mesh) {
     // TODO search instead of hardcode
-    const vertexSource = mesh.source.find((source) => source.$.id === 'Cube-mesh-positions');
+    const sourceId = getSourceId(mesh)
+    const vertexSource = mesh.source.find((source) => ('#' + source.$.id) === sourceId);
     const vertexCount = parseInt(vertexSource.float_array[0].$.count) / 3;
 
     // Must be integer
@@ -150,7 +172,31 @@ export function getIndexVertices(mesh: Mesh) {
                     break;
             } 
         });
-        
+
         return vertices;
 
-}
+};
+
+export function mapTriangleIndecesToVertices(trianglesIndices: TrianglesIndices, vertices: Vector3d[]): Triangles3D {
+    return trianglesIndices
+        .map(([v1, v2, v3]) => {
+            if (Math.max(v1,v2,v3) > vertices.length) {
+                throw new Error('Not enough vertex data');
+            }
+            return [vertices[v1], vertices[v2], vertices[v3]];
+        });
+};
+
+export async function parseDAETriangles(relativePath: string) {
+    const daeJSON = await DAEFile2JSON(relativePath);
+    const mesh = JSON2Mesh(daeJSON);
+
+    // Perform validation
+    assertLinkedVertexIds(mesh);
+
+    const t = getTriangleIndecies(mesh);
+    const v = getIndexVertices(mesh);
+    const triangles = mapTriangleIndecesToVertices(t, v);
+
+    return triangles;
+};
