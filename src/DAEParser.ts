@@ -2,7 +2,7 @@ import { resolve } from 'path';
 import { readFileSync } from 'fs';
 import { Parser } from 'xml2js';
 
-// File format docs: https://docs.fileformat.com/3d/dae/
+// File format docs: https://www.khronos.org/files/collada_spec_1_5.pdf
 export const COLLADA = 'COLLADA';
 export const GEOMETRY_ATTRIBUTES = 'library_geometries';
 export const GEOMETRY = 'geometry';

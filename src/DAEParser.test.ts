@@ -4,7 +4,7 @@ import {
     TrianglesIndices,
     Vector3d,
     parseDAETriangles
-} from './index';
+} from './DAEParser';
 
 
 it('can parse xml attributes', async () => {
