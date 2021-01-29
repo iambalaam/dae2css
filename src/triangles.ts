@@ -126,70 +126,85 @@ export function findHypotenuse(triangle: Triangle3D) {
     return longestLineIndex
 }
 
+export function rotateTriangleWithHypFirst(triangle: Triangle3D): Triangle3D {
+    const i = findHypotenuse(triangle);
+    return [triangle[i], triangle[(i + 1) % 3], triangle[(i + 2) % 3]]
+}
+
+/**
+ * Expects the first two vertices to describe the hypotenuse, and continues anti-clockwise
+ * @param triangle 
+ */
 export function perpendicularDisector(triangle: Triangle3D) {
     // Find perpendicular disector to 3rd vertex
     // Because it is from the hypotenuse, the disector must be inside the triangle
     const v = triangle;
     const i = findHypotenuse(triangle);
 
-    // Let be the normal vector n = v[2] - v[1]
-    const n = subtract3D(v[(i + 1) % 3], v[i]);
-    // Line L = v[i] + λn
+    // Let be the normal vector n = v[1] - v[0]
+    const n = subtract3D(v[1], v[0]);
+    // Line L: X = v[0] + λn
 
-    // Plane ∏ with normal vector n passes through v[i+2]
+    // Plane ∏ with normal vector n passes through v[2]
     // So a point X on plane ∏ can be described:
-    // n . v[i+2] = n . X = μ
-    const μ = dot3D(n, v[(i + 2) % 3]);
+    // n . v[2] = n . X = μ
+    const μ = dot3D(n, v[2]);
 
     // Use equations for ∏ and L:
-    const λ = (μ - dot3D(n, v[i])) / dot3D(n, n);
+    const λ = (μ - dot3D(n, v[0])) / dot3D(n, n);
 
     // We have solved for point X
-    const X = add3D(v[i], scale3D(λ, n));
+    const X = add3D(v[0], scale3D(λ, n));
 
     return X;
 }
 
+/**
+ * Expects the first two vertices to describe the hypotenuse, and continues anti-clockwise
+ * @param triangle 
+ */
 export function getBoxModel(triangle: Triangle3D) {
-    const hypotenuse = findHypotenuse(triangle);
     const p = perpendicularDisector(triangle);
 
     return {
-        width: distance3D(triangle[hypotenuse], triangle[(hypotenuse + 1) % 3]),
-        height: distance3D(p, triangle[(hypotenuse + 2) % 3]),
-        borderLeft: distance3D(triangle[hypotenuse], p),
-        borderRight: distance3D(triangle[(hypotenuse + 1) % 3], p),
+        width: distance3D(triangle[0], triangle[1]),
+        height: distance3D(p, triangle[2]),
+        borderLeft: distance3D(triangle[0], p),
+        borderRight: distance3D(triangle[1], p),
     }
 }
 
-export function getTransformationMatrix(triangle: Triangle3D) {
-    // Calculate initial triangle vertices
-    const { width, height, borderLeft } = getBoxModel(triangle);
-    const initialTriangle: Triangle3D = [
-        { x: 0, y: 0, z: 0 },
-        { x: width, y: 0, z: 0 },
-        { x: borderLeft, y: height, z: 0 }
-    ];
+/**
+ * Expects the first two vertices to describe the hypotenuse, and continues anti-clockwise
+ * Expects the first vertex to be on the origin
+ * @param triangle 
+ */
+export function getTransformationMatrix3D(iT: Triangle3D, tT: Triangle3D) {
     const initialNormal: Vector3d = { x: 0, y: 0, z: 1 };
 
     // Translate the first vertex to the origin
     const targetTriangle = [
         { x: 0, y: 0, z: 0 },
-        subtract3D(triangle[1], triangle[0]),
-        subtract3D(triangle[2], triangle[0])
+        subtract3D(tT[1], tT[0]),
+        subtract3D(tT[2], tT[0])
     ]
     const targetNormal = normal3D(targetTriangle[1], targetTriangle[2])
 
-    // Some transform matrix M maps initial triangle (iT) to target triangle (tT)
+    // Some transform matrix M maps initial vectorspace (iV) to target vectorspace (tV)
     // M(iT) = (tT)
-    const iT: Matrix3x3 = [initialNormal, initialTriangle[1], initialTriangle[2]];
-    const tT: Matrix3x3 = [targetNormal, targetTriangle[1], targetTriangle[2]]
+    const iV: Matrix3x3 = [initialNormal, iT[1], iT[2]];
+    const tV: Matrix3x3 = [targetNormal, targetTriangle[1], targetTriangle[2]]
 
-    // If we can find an inverse (iTinv) so (iTinv)(iT) = I
+    // If we can find an inverse (iVinv) so (iVinv)(iV) = I
     // Then
-    // M = (tT)(iTinv)
-    const iTinv = inverse3x3(iT);
+    // M = (tV)(iVinv)
+    const iVinv = inverse3x3(iV);
 
-    const M = multiply3x3(tT, iTinv);
-    return M;
+    const M = multiply3x3(tV, iVinv);
+
+    // We can now add the translation to make the affine 4x4 matrix
+    return M
+        .map(({ x, y, z }) => `${x}, ${y}, ${z}, 0`)
+        .concat(`${tT[0].x}, ${tT[0].y}, ${tT[0].z}, 1`)
+        .join(', ');
 }
