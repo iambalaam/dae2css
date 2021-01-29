@@ -139,7 +139,6 @@ export function perpendicularDisector(triangle: Triangle3D) {
     // Find perpendicular disector to 3rd vertex
     // Because it is from the hypotenuse, the disector must be inside the triangle
     const v = triangle;
-    const i = findHypotenuse(triangle);
 
     // Let be the normal vector n = v[1] - v[0]
     const n = subtract3D(v[1], v[0]);

@@ -31,9 +31,9 @@ describe('perpendicularDisector()', () => {
     it('finds the midpont of a 1,1,√2 triangle', () => {
         // Flat triangle on the x,y plane
         const mockTriangle: Triangle3D = [
-            { x: 0, y: 0, z: 0 },
             { x: 1, y: 0, z: 0 },
             { x: 0, y: 1, z: 0 },
+            { x: 0, y: 0, z: 0 },
         ];
         expect(
             perpendicularDisector(mockTriangle)
