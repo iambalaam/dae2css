@@ -1,4 +1,4 @@
-import { adjugate3x3, determinant3x3, getBoxModel, getTransformationMatrix3D, identity3x3, inverse3x3, Matrix3x3, multiply3x3, perpendicularDisector, transpose3x3 } from './triangles';
+import { adjugate3x3, cross3D, determinant3x3, dot3D, getBoxModel, identity3x3, inverse3x3, Matrix3x3, multiply3x3, perpendicularDisector, transpose3x3 } from './triangles';
 import { Triangle3D } from './types';
 
 describe('helpers', () => {
@@ -25,6 +25,15 @@ describe('helpers', () => {
         const invM = inverse3x3(M);
         expect(multiply3x3(M, invM)).toEqual(identity3x3);
     });
+
+    it('can find the dot product', () => {
+        expect(dot3D({ x: 4, y: 8, z: 10 }, { x: 9, y: 2, z: 7 })).toEqual(122);
+    });
+
+    it('can find the cross product', () => {
+        expect(cross3D({ x: 2, y: 3, z: 4 }, { x: 5, y: 6, z: 7 })).toEqual({ x: -3, y: 6, z: -3 });
+    });
+
 })
 
 describe('perpendicularDisector()', () => {
@@ -42,7 +51,7 @@ describe('perpendicularDisector()', () => {
 })
 
 describe('getBoxModel()', () => {
-    it('finds the bounding box', () => {
+    it('finds the bounding box 1', () => {
         const { width, height, borderLeft, borderRight } = getBoxModel([
             { x: 0, y: 0, z: 0 },
             { x: 8, y: 0, z: 0 },
@@ -52,5 +61,16 @@ describe('getBoxModel()', () => {
         expect(height).toBe(1);
         expect(borderLeft).toBe(2);
         expect(borderRight).toBe(6);
+    })
+    it('finds the bounding box 2', () => {
+        const { width, height, borderLeft, borderRight } = getBoxModel([
+            { x: 1, y: 0, z: 0 },
+            { x: 0, y: 1, z: 0 },
+            { x: 0, y: 0, z: 0 },
+        ]);
+        expect(width).toBe(Math.sqrt(2))
+        expect(height).toBe(Math.sqrt(2) / 2);
+        expect(borderLeft).toBe(Math.sqrt(2) / 2);
+        expect(borderRight).toBe(Math.sqrt(2) / 2);
     })
 });

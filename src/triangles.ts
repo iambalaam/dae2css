@@ -178,7 +178,7 @@ export function getBoxModel(triangle: Triangle3D) {
  * Expects the first vertex to be on the origin
  * @param triangle 
  */
-export function getTransformationMatrix3D(iT: Triangle3D, tT: Triangle3D) {
+export function getAffineTransformationMatrix(iT: Triangle3D, tT: Triangle3D): [Vector3d, Vector3d, Vector3d, Vector3d] {
     const initialNormal: Vector3d = { x: 0, y: 0, z: 1 };
 
     // Translate the first vertex to the origin
@@ -201,9 +201,6 @@ export function getTransformationMatrix3D(iT: Triangle3D, tT: Triangle3D) {
 
     const M = multiply3x3(tV, iVinv);
 
-    // We can now add the translation to make the affine 4x4 matrix
-    return M
-        .map(({ x, y, z }) => `${x}, ${y}, ${z}, 0`)
-        .concat(`${tT[0].x}, ${tT[0].y}, ${tT[0].z}, 1`)
-        .join(', ');
+    // We can now add the translation to make the affine 4x3 matrix
+    return [...M, tT[0]];
 }
