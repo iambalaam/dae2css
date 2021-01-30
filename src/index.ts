@@ -16,7 +16,7 @@ import { Triangle3D } from './types';
             const initialTriangle: Triangle3D = [
                 { x: 0, y: 0, z: 0 },
                 { x: box.width, y: 0, z: 0 },
-                { x: box.borderLeft, y: box.height, z: 0 }
+                { x: box.borderLeft, y: -box.height, z: 0 }
             ];
             const matrixTransform = getAffineTransformationMatrix(initialTriangle, scaled);
             const cssMatrixTransform = matrixTransform

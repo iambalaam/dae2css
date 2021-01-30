@@ -173,13 +173,23 @@ export function getBoxModel(triangle: Triangle3D) {
     }
 }
 
+export function coordinateChange(v: Vector3d): Vector3d {
+    return {
+        x: v.x,
+        y: - v.z,
+        z: v.y
+    }
+}
+
 /**
  * Expects the first two vertices to describe the hypotenuse, and continues anti-clockwise
  * Expects the first vertex to be on the origin
  * @param triangle 
  */
-export function getAffineTransformationMatrix(iT: Triangle3D, tT: Triangle3D): [Vector3d, Vector3d, Vector3d, Vector3d] {
-    const initialNormal: Vector3d = { x: 0, y: 0, z: 1 };
+export function getAffineTransformationMatrix(initial: Triangle3D, target: Triangle3D): [Vector3d, Vector3d, Vector3d, Vector3d] {
+    const iT = initial;
+    const tT = target.map(coordinateChange);
+    const initialNormal = normal3D(iT[1], iT[2])
 
     // Translate the first vertex to the origin
     const targetTriangle = [
@@ -187,7 +197,7 @@ export function getAffineTransformationMatrix(iT: Triangle3D, tT: Triangle3D): [
         subtract3D(tT[1], tT[0]),
         subtract3D(tT[2], tT[0])
     ]
-    const targetNormal = normal3D(targetTriangle[1], targetTriangle[2])
+    const targetNormal = normal3D(targetTriangle[1], targetTriangle[2]);
 
     // Some transform matrix M maps initial vectorspace (iV) to target vectorspace (tV)
     // M(iT) = (tT)
