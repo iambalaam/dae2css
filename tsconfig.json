@@ -4,7 +4,8 @@
     "allowJs": false,
     "module": "CommonJS",
     "skipLibCheck": true,
-    "outDir": "lib"
+    "outDir": "lib",
+    "declaration": true
   },
   "include": [
     "src"
