@@ -39,6 +39,8 @@ export function createTemplate(triangles: string) {
                 width: 0;
                 height: 0;
                 position: absolute;
+                left: 0;
+                bottom: 0;
                 transform-origin: bottom left;
     
                 border: 0px solid transparent;
