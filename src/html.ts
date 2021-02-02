@@ -7,6 +7,16 @@ export function renderCSSTriangle(height: number, borderLeft: number, borderRigh
         `"></div>`;
 }
 
+export const requiredCSSRules = `
+width: 0;
+height: 0;
+position: absolute;
+left: 0;
+bottom: 0;
+transform-origin: bottom left;
+border: 0px solid transparent;
+`;
+
 export function createTemplate(triangles: string) {
     return `
     <!DOCTYPE html>
@@ -36,15 +46,8 @@ export function createTemplate(triangles: string) {
             }
     
             .triangle {
-                width: 0;
-                height: 0;
-                position: absolute;
-                left: 0;
-                bottom: 0;
-                transform-origin: bottom left;
-    
-                border: 0px solid transparent;
-                border-bottom-color: rgba(255, 0, 0, 0.2);
+                ${requiredCSSRules}
+                border-bottom-color: rgba(255,0,0,0.1);
             }
     
             @keyframes spin {
