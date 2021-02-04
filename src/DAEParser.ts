@@ -49,14 +49,13 @@ export type ColladaJSON = {
 
 export type TrianglesIndices = [number, number, number][];
 
-export async function DAEFile2JSON(relativePath: string) {
+export async function DAEFile2JSON(absolutePath: string) {
     // Read file
     let contents = '';
-    const resolvedPath = resolve(relativePath);
     try {
-        contents = readFileSync(resolvedPath).toString();
+        contents = readFileSync(absolutePath).toString();
     } catch (e) {
-        throw new Error(`Cannot read file ${resolvedPath}`);
+        throw new Error(`Cannot read file ${absolutePath}`);
     }
 
     // Parse XML
@@ -89,14 +88,14 @@ export function getSourceId(mesh: Mesh) {
     if (!inputSources || !inputSources.length) {
         throw new Error('Cannot find input source data');
     }
-    if (inputSources.length> 1) {
+    if (inputSources.length > 1) {
         throw new Error('Multiple input source data found');
     }
     return inputSources[0].$.source;
 };
 
 export function getVerticesId(mesh: Mesh) {
-    const vertices =  mesh.vertices;
+    const vertices = mesh.vertices;
     if (!vertices || !vertices.length) {
         throw new Error('Cannot find vertex data');
     }
@@ -168,25 +167,25 @@ export function getIndexVertices(mesh: Mesh) {
                 case 2:
                     vertices[vertex].z = parseFloat(coordinate);
                     break;
-            } 
+            }
         });
 
-        return vertices;
+    return vertices;
 
 };
 
 export function mapTriangleIndecesToVertices(trianglesIndices: TrianglesIndices, vertices: Vector3d[]): Triangle3D[] {
     return trianglesIndices
         .map(([v1, v2, v3]) => {
-            if (Math.max(v1,v2,v3) > vertices.length) {
+            if (Math.max(v1, v2, v3) > vertices.length) {
                 throw new Error('Not enough vertex data');
             }
             return [vertices[v1], vertices[v2], vertices[v3]];
         });
 };
 
-export async function parseDAETriangles(relativePath: string) {
-    const daeJSON = await DAEFile2JSON(relativePath);
+export async function parseDAETriangles(absolutePath: string) {
+    const daeJSON = await DAEFile2JSON(absolutePath);
     const mesh = JSON2Mesh(daeJSON);
 
     // Perform validation
