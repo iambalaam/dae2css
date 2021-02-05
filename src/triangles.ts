@@ -197,7 +197,10 @@ export function getAffineTransformationMatrix(initial: Triangle3D, target: Trian
         subtract3D(tT[1], tT[0]),
         subtract3D(tT[2], tT[0])
     ]
-    const targetNormal = normal3D(targetTriangle[1], targetTriangle[2]);
+
+    // Target normal must be reversed as we go from RH space to LH space
+    // This preserves face direction and enables backface culling
+    const targetNormal = scale3D(-1, normal3D(targetTriangle[1], targetTriangle[2]));
 
     // Some transform matrix M maps initial vectorspace (iV) to target vectorspace (tV)
     // M(iT) = (tT)
